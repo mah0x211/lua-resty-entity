@@ -45,11 +45,8 @@ local function get()
     local entity = rawget( ngx.ctx, 'entity' );
     
     if not entity then
-        local method = ngx.req.get_method();
-        
         entity = {
-            docroot = ngx.var.document_root,
-            method = method,
+            method = ngx.req.get_method(),
             scheme = ngx.var.scheme,
             uri = ngx.var.uri,
             query = ngx.req.get_uri_args(),
