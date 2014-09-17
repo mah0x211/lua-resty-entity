@@ -49,8 +49,7 @@ local function get()
             scheme = ngx.var.scheme,
             uri = ngx.var.uri,
             query = ngx.req.get_uri_args(),
-            header = ngx.req.get_headers(),
-            body = getBody
+            header = ngx.req.get_headers()
         };
         rawset( ngx.ctx, 'entity', entity );
     end
