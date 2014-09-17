@@ -27,8 +27,7 @@
   Created by Masatoshi Teruya on 14/06/30.
 
 --]]
-local halo = require('halo');
-local Constants = halo.class.Constants;
+local Constants = require('halo').class.Constants;
 local CODES = {
     -- 1xx infromational
     CONTINUE                            = 100,
@@ -105,13 +104,21 @@ local CODES = {
     NETWORK_AUTHENTICATION_REQUIRED     = 511,  -- RFC 6585
 
     -- set methods
-    M_GET           = ngx.HTTP_GET,
-    M_POST          = ngx.HTTP_POST,
-    M_PUT           = ngx.HTTP_PUT,
-    M_HEAD          = ngx.HTTP_HEAD,
-    M_DELETE        = ngx.HTTP_DELETE,
-    M_OPTIONS       = ngx.HTTP_OPTIONS,
-    M_TRACE         = ngx.HTTP_TRACE,
+    M_GET         = ngx.HTTP_GET,
+    M_HEAD        = ngx.HTTP_HEAD,
+    M_PUT         = ngx.HTTP_PUT,
+    M_POST        = ngx.HTTP_POST,
+    M_DELETE      = ngx.HTTP_DELETE,
+    M_OPTIONS     = ngx.HTTP_OPTIONS,
+    M_MKCOL       = ngx.HTTP_MKCOL,
+    M_COPY        = ngx.HTTP_COPY,
+    M_MOVE        = ngx.HTTP_MOVE,
+    M_PROPFIND    = ngx.HTTP_PROPFIND,
+    M_PROPPATCH   = ngx.HTTP_PROPPATCH,
+    M_LOCK        = ngx.HTTP_LOCK,
+    M_UNLOCK      = ngx.HTTP_UNLOCK,
+    M_PATCH       = ngx.HTTP_PATCH,
+    M_TRACE       = ngx.HTTP_TRACE
 };
 -- set status-names
 local NAMES = {};
