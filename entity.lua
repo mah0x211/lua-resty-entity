@@ -39,7 +39,6 @@ local PARSER = {
     ['application/json'] = require('resty.entity.json')
 };
 
-
 -- get request table
 local function get()
     local entity = rawget( ngx.ctx, 'entity' );
@@ -50,7 +49,8 @@ local function get()
             scheme = ngx.var.scheme,
             uri = ngx.var.uri,
             query = ngx.req.get_uri_args(),
-            header = ngx.req.get_headers()
+            header = ngx.req.get_headers(),
+            body = getBody
         };
         rawset( ngx.ctx, 'entity', entity );
     end
@@ -61,38 +61,32 @@ end
 
 -- get entity-body
 local function getBody( ... )
-    local rc, req = OK, getEntity();
-    local err;
-    
-    if not rawget( req, 'body' ) then
-        local ctype, clen = ngx.var.http_content_type, ngx.var.content_length;
-        local body = {};
-        
-        if ctype and clen then
-            local parser;
-            
-            ctype = ctype:match('^[^;]+');
-            parser = PARSER[ctype];
-            if parser then
-                rc, body, err = parser( ... );
-                -- invalid status-code
-                if not rc or not constants.toString( rc ) then
-                    rc = INTERNAL_SERVER_ERROR;
-                    err = ('parser should return valid http status code' );
-                end
-            -- unsupported content-type
-            else
-                rc = UNSUPPORTED_MEDIA_TYPE;
+    local entity = get();
+
+    if entity.body then
+        return entity.body;
+    elseif ngx.var.http_content_type then
+        local parser = PARSER[ngx.var.http_content_type:match('^[^;]+')];
+
+        -- unsupported content-type
+        if not parser then
+            return nil, UNSUPPORTED_MEDIA_TYPE;
+        elseif ngx.var.content_length then
+            local body, rc, err = parser( ... );
+
+            if body then
+                entity.body = body;
+                return body;
+            -- invalid status-code
+            elseif not constants.toString( rc ) then
+                return nil, INTERNAL_SERVER_ERROR, 'parser returned invalid status code.';
             end
-        -- no content
-        else
-            rc = NO_CONTENT;
+
+            return nil, rc, err;
         end
-        
-        rawset( req, 'body', body );
     end
     
-    return rc, req, err;
+    return nil, NO_CONTENT;
 end
 
 
@@ -108,13 +102,13 @@ local function setBodyParser( tbl )
                 error( 'content-type must be type of string' );
             -- remove parser
             elseif fn == false then
-                rawset( PARSER, ctype, nil );
+                PARSER[ctype] = nil;
             -- check parser
             elseif type( fn ) ~= 'function' then
                 error( 'parser must be type of function' );
             -- register parser
             else
-                rawset( PARSER, ctype, fn );
+                PARSER[ctype] = fn;
             end
         end
     end

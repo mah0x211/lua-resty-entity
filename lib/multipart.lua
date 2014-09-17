@@ -44,8 +44,8 @@ local DEFAULT = {
     TIMEOUT = 1000,
     -- read buffer-size
     BUFLEN = 4096,
-    -- max file-size
-    MAXLEN = 1024
+    -- max file-size (default: 100KB)
+    MAXLEN = 1024*100
 };
 
 
@@ -78,11 +78,14 @@ local function rcvHeader( field, header )
     if not field then
         local k,v;
         
-        field = {};
+        field = {
+            val = ''
+        };
         -- split name="value"
         for k, v in header[2]:gmatch('([^%s]+)="?([^"]+)"?') do
-            rawset( field, k:lower(), v );
+            field[k:lower()] = v;
         end
+    -- set other field
     else
         rawset( field, header[1]:lower():gsub( '-', '_' ), header[2] );
     end
@@ -91,7 +94,7 @@ local function rcvHeader( field, header )
 end
 
 
-local function rcvBody( field, val )
+local function rcvBody( cfg, field, val )
     -- append value
     if not field.filename then
         field.val = field.val .. val;
@@ -110,7 +113,7 @@ local function rcvBody( field, val )
             -- create tmpfile
             field.fh, err = io.open( field.tmpfile, 'w+' );
             if err then
-                return 'failed to create temporary file: ' .. err;
+                return INTERNAL_SERVER_ERROR, 'failed to create temporary file: ' .. err;
             end
         end
         
@@ -121,7 +124,7 @@ local function rcvBody( field, val )
         else
             tmp, err = field.fh:write( val );
             if err then
-                return 'failed to write to temporary file: ' .. err;
+                return INTERNAL_SERVER_ERROR, 'failed to write to temporary file: ' .. err;
             end
             field.bytes = field.bytes + len;
         end
@@ -129,16 +132,20 @@ local function rcvBody( field, val )
 end
 
 
+local function closeTmpfile( field )
+    -- close tmpfile
+    if field and field.fn then
+        field.fh:close();
+        field.fh = nil;
+    end
+end
+
 local function setFormField( form, field )
     local key = field.name;
     
     field.name = nil;
     util.table.set( form, key, field );
-    -- close tmpfile
-    if field.fn then
-        field.fh:close();
-        field.fh = nil;
-    end
+    closeTmpfile( field );
 end
 
 
@@ -150,16 +157,16 @@ local function mergeConfig( cfg )
         local key, val, t, cval;
         
         for key, val in pairs( DEFAULT ) do
-            cval = rawget( cfg, key:lower() );
+            cval = cfg[key:lower()];
             -- set default value
             if not cval then
-                rawset( cfg, key, val );
+                cfg[key] = val;
             -- invalid type of value
             elseif type( cval ) ~= type( val ) then
                 err = ('%s must be type of %s'):format( key:lower(), t );
                 break;
             else
-                rawset( cfg, key, cval );
+                cfg[key] = cval;
             end
         end
     -- use default
@@ -173,61 +180,53 @@ end
 
 local function parse( ... )
     local cfg, err = mergeConfig( ... );
-    local rc, form = OK, {};
-    
+    local rc = OK;
+    local form = {};
+    local parser, field, state, key, val;
+
     if err then
-        rc = INTERNAL_SERVER_ERROR;
-    else
-        local parser;
-        
-        -- create resty.upload instance
-        parser, err = upload:new( cfg.BUFLEN );
-        if not parser then
-            rc = INTERNAL_SERVER_ERROR;
-        else
-            local field, state, key, val;
-            
-            parser:set_timeout( cfg.TIMEOUT );
-            -- parse entity body
-            while true do
-                state, val, err = parser:read()
-                -- got error
-                if err then
-                    rc = INTERNAL_SERVER_ERROR;
-                    break;
-                -- end-of-file stream
-                elseif state == 'eof' then
-                    break;
-                -- found header
-                elseif state == 'header' then
-                    if type( val ) ~= 'table' then
-                        err = 'found invalid request line: ' .. val;
-                        rc = BAD_REQUEST;
-                        break;
-                    end
-                    field = rcvHeader( field, val );
-                -- found body
-                elseif state == 'body' then
-                    err = rcvBody( field, val );
-                    if err then
-                        rc = INTERNAL_SERVER_ERROR;
-                        break;
-                    end
-                -- finish part
-                elseif state == 'part_end' then
-                    setFormField( form, field );
-                    field = nil;
-                end
+        return nil, INTERNAL_SERVER_ERROR, err;
+    end
+
+    -- create resty.upload instance
+    parser, err = upload:new( cfg.BUFLEN );
+    if not parser then
+        return nil, INTERNAL_SERVER_ERROR, err;
+    end
+
+    parser:set_timeout( cfg.TIMEOUT );
+    -- parse entity body
+    while true do
+        state, val, err = parser:read()
+        -- got error
+        if err then
+            closeTmpfile( field );
+            return nil, INTERNAL_SERVER_ERROR, err;
+        -- end-of-file stream
+        elseif state == 'eof' then
+            break;
+        -- found header
+        elseif state == 'header' then
+            if type( val ) ~= 'table' then
+                closeTmpfile( field );
+                return nil, BAD_REQUEST, 'found invalid request line: ' .. val;
             end
-            
-            -- cleanup on error
-            if field then
-                setFormField( form, field );
+            field = rcvHeader( field, val );
+        -- found body
+        elseif state == 'body' then
+            rc, err = rcvBody( cfg, field, val );
+            if rc then
+                closeTmpfile( field );
+                return nil, rc, err;
             end
+        -- finish part
+        elseif state == 'part_end' then
+            setFormField( form, field );
+            field = nil;
         end
     end
     
-    return rc, form, err;
+    return form;
 end
 
 

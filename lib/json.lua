@@ -31,25 +31,25 @@
 local cjson = require('cjson.safe');
 local util = require('util');
 local constants = require('resty.entity.constants');
-local OK = constants.OK;
 local UNPROCESSABLE_ENTITY = constants.UNPROCESSABLE_ENTITY;
+local NO_CONTENT = constants.NO_CONTENT;
 
 -- application/json
 local function parse()
-    local rc, form = OK, {};
-    local err, data;
+    local json, err, data;
     
     ngx.req.read_body();
     data = ngx.req.get_body_data();
-    if data then
-        form, err = cjson.decode( data );
-        if err then
-            err = 'failed to cjson.decode: ' .. err;
-            rc = UNPROCESSABLE_ENTITY;
-        end
+    if not data then
+        return nil, NO_CONTENT;
+    end
+
+    json, err = cjson.decode( data );
+    if err then
+        return nil, UNPROCESSABLE_ENTITY, 'failed to cjson.decode: ' .. err;
     end
     
-    return rc, form, err;
+    return json;
 end
 
 

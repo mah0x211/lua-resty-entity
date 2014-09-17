@@ -41,7 +41,7 @@ local function parse()
         util.table.set( form, k, v );
     end
     
-    return OK, form;
+    return form;
 end
 
 
