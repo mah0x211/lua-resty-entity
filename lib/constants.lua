@@ -134,7 +134,16 @@ end
 Constants.property( CODES );
 
 function Constants.toString( val )
-    return rawget( NAMES, tostring(val) );
+    return NAMES[tostring(val)];
+end
+
+
+function Constants.copy( tbl )
+    local k, v;
+
+    for k, v in pairs( CODES ) do
+        tbl[k] = v;
+    end
 end
 
 
