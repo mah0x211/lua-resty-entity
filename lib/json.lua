@@ -29,7 +29,6 @@
 --]]
 
 local cjson = require('cjson.safe');
-local util = require('util');
 local constants = require('resty.entity.constants');
 local UNPROCESSABLE_ENTITY = constants.UNPROCESSABLE_ENTITY;
 local NO_CONTENT = constants.NO_CONTENT;

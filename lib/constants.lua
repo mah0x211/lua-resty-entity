@@ -123,7 +123,6 @@ local CODES = {
 -- set status-names
 local NAMES = {};
 do
-    local k, v;
     for k, v in pairs( CODES ) do
         if not k:find( '^M_' ) then
             NAMES[tostring(v)] = k;
@@ -139,8 +138,6 @@ end
 
 
 function Constants.copy( tbl )
-    local k, v;
-
     for k, v in pairs( CODES ) do
         tbl[k] = v;
     end

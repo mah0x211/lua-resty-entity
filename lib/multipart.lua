@@ -52,7 +52,6 @@ local DEFAULT = {
 local function pathNormalize( ... )
     local argv = {...};
     local path = argv[1];
-    local seg = nil;
     local res = {};
     
     if #argv > 1 then
@@ -76,8 +75,6 @@ end
 
 local function rcvHeader( field, header )
     if not field then
-        local k,v;
-        
         field = {
             val = ''
         };
@@ -154,7 +151,7 @@ local function mergeConfig( cfg )
     
     -- overwrite
     if cfg then
-        local key, val, t, cval;
+        local t, cval;
         
         for key, val in pairs( DEFAULT ) do
             cval = cfg[key:lower()];
@@ -182,7 +179,7 @@ local function parse( ... )
     local cfg, err = mergeConfig( ... );
     local rc = OK;
     local form = {};
-    local parser, field, state, key, val;
+    local parser, field, state, val;
 
     if err then
         return nil, INTERNAL_SERVER_ERROR, err;

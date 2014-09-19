@@ -29,7 +29,6 @@
 --]]
 
 local constants = require('resty.entity.constants');
-local OK = constants.OK;
 local UNSUPPORTED_MEDIA_TYPE = constants.UNSUPPORTED_MEDIA_TYPE;
 local INTERNAL_SERVER_ERROR = constants.INTERNAL_SERVER_ERROR;
 local NO_CONTENT = constants.NO_CONTENT;
@@ -94,8 +93,6 @@ local function setBodyParser( tbl )
     if ngx.get_phase() ~= 'init' then
         error( 'must be call on init phase' );
     else
-        local ctype, fn;
-        
         for ctype, fn in pairs( tbl ) do
             if type( ctype ) ~= 'string' then
                 error( 'content-type must be type of string' );

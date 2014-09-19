@@ -29,12 +29,10 @@
 --]]
 
 local util = require('util');
-local OK = require('resty.entity.constants').OK;
 
 -- application/x-www-form-urlencoded
 local function parse()
     local form = {};
-    local k, v;
     
     ngx.req.read_body();
     for k,v in pairs( ngx.req.get_post_args() ) do
