@@ -28,7 +28,7 @@
 
 --]]
 
-local cjson = require('cjson.safe');
+local decode = require('cjson.safe').decode;
 local constants = require('resty.entity.constants');
 local UNPROCESSABLE_ENTITY = constants.UNPROCESSABLE_ENTITY;
 local NO_CONTENT = constants.NO_CONTENT;
@@ -43,7 +43,7 @@ local function parse()
         return nil, NO_CONTENT;
     end
 
-    json, err = cjson.decode( data );
+    json, err = decode( data );
     if err then
         return nil, UNPROCESSABLE_ENTITY, 'failed to cjson.decode: ' .. err;
     end
