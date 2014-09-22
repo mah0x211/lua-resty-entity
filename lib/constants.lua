@@ -27,8 +27,24 @@
   Created by Masatoshi Teruya on 14/06/30.
 
 --]]
-local Constants = require('halo').class.Constants;
-local CODES = {
+local HTTP_METHOD = {
+    M_GET         = 'GET',
+    M_HEAD        = 'HEAD',
+    M_PUT         = 'PUT',
+    M_POST        = 'POST',
+    M_DELETE      = 'DELETE',
+    M_OPTIONS     = 'OPTIONS',
+    M_MKCOL       = 'MKCOL',
+    M_COPY        = 'COPY',
+    M_MOVE        = 'MOVE',
+    M_PROPFIND    = 'PROPFIND',
+    M_PROPPATCH   = 'PROPPATCH',
+    M_LOCK        = 'LOCK',
+    M_UNLOCK      = 'UNLOCK',
+    M_PATCH       = 'PATCH',
+    M_TRACE       = 'TRACE'
+};
+local HTTP_STATUS = {
     -- 1xx infromational
     CONTINUE                            = 100,
     SWITCHING_PROTOCOLS                 = 101,
@@ -102,45 +118,30 @@ local CODES = {
     BANDWIDTH_LIMIT_EXCEEDED            = 509,  -- Apache bw/limited extension
     NOT_EXTENDED                        = 510,  -- RFC 2774
     NETWORK_AUTHENTICATION_REQUIRED     = 511,  -- RFC 6585
-
-    -- set methods
-    M_GET         = ngx.HTTP_GET,
-    M_HEAD        = ngx.HTTP_HEAD,
-    M_PUT         = ngx.HTTP_PUT,
-    M_POST        = ngx.HTTP_POST,
-    M_DELETE      = ngx.HTTP_DELETE,
-    M_OPTIONS     = ngx.HTTP_OPTIONS,
-    M_MKCOL       = ngx.HTTP_MKCOL,
-    M_COPY        = ngx.HTTP_COPY,
-    M_MOVE        = ngx.HTTP_MOVE,
-    M_PROPFIND    = ngx.HTTP_PROPFIND,
-    M_PROPPATCH   = ngx.HTTP_PROPPATCH,
-    M_LOCK        = ngx.HTTP_LOCK,
-    M_UNLOCK      = ngx.HTTP_UNLOCK,
-    M_PATCH       = ngx.HTTP_PATCH,
-    M_TRACE       = ngx.HTTP_TRACE
 };
--- set status-names
-local NAMES = {};
+local STATUS_TBL = {};
 do
-    for k, v in pairs( CODES ) do
-        if not k:find( '^M_' ) then
-            NAMES[tostring(v)] = k;
-        end
-    end
+	for k, v in pairs( HTTP_STATUS ) do
+		STATUS_TBL[tostring(v)] = k;
+	end
 end
 
-Constants.property( CODES );
+-- Class
+local Constants = require('halo').class.Constants;
+
+Constants.property( HTTP_STATUS );
 
 function Constants.toString( val )
-    return NAMES[tostring(val)];
+    return STATUS_TBL[tostring(val)];
 end
 
 
 function Constants.copy( tbl )
-    for k, v in pairs( CODES ) do
-        tbl[k] = v;
-    end
+	for _, v in ipairs({ HTTP_STATUS, HTTP_METHOD }) do
+		for k, v in pairs( v ) do
+			tbl[k] = v;
+		end
+	end
 end
 
 
