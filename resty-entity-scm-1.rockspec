@@ -5,7 +5,6 @@ source = {
 }
 description = {
     summary = "request entity handling module for openresty",
-    detailed = [[]],
     homepage = "https://github.com/mah0x211/lua-resty-entity", 
     license = "MIT/X11",
     maintainer = "Masatoshi Teruya"
