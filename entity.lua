@@ -47,6 +47,7 @@ local function get()
             method = ngx.req.get_method(),
             scheme = ngx.var.scheme,
             uri = ngx.var.uri,
+            request_uri = ngx.var.request_uri,
             query = ngx.req.get_uri_args(),
             header = ngx.req.get_headers()
         };
