@@ -37,60 +37,16 @@ local PARSER = {
     ['multipart/form-data'] = require('resty.entity.multipart'),
     ['application/json'] = require('resty.entity.json')
 };
-
--- get request table
-local function get()
-    local entity = rawget( ngx.ctx, 'entity' );
-    
-    if not entity then
-        entity = {
-            method = ngx.req.get_method(),
-            scheme = ngx.var.scheme,
-            uri = ngx.var.uri,
-            request_uri = ngx.var.request_uri,
-            query = ngx.req.get_uri_args(),
-            header = ngx.req.get_headers()
-        };
-        rawset( ngx.ctx, 'entity', entity );
-    end
-    
-    return entity;
-end
+local ACCEPT_ENTITY_BODY = {
+	POST = true,
+	PUT = true,
+    DELETE = true
+};
+local Entity = require('halo').class.Entity;
 
 
--- get entity-body
-local function getBody( ... )
-    local entity = get();
-
-    if entity.body then
-        return entity.body;
-    elseif ngx.var.http_content_type then
-        local parser = PARSER[ngx.var.http_content_type:match('^[^;]+')];
-
-        -- unsupported content-type
-        if not parser then
-            return nil, UNSUPPORTED_MEDIA_TYPE;
-        elseif ngx.var.content_length then
-            local body, rc, err = parser( ... );
-
-            if body then
-                entity.body = body;
-                return body;
-            -- invalid status-code
-            elseif not constants.toString( rc ) then
-                return nil, INTERNAL_SERVER_ERROR, 'parser returned invalid status code.';
-            end
-
-            return nil, rc, err;
-        end
-    end
-    
-    return nil, NO_CONTENT;
-end
-
-
--- rewrite entity-body parser
-local function setBodyParser( tbl )
+-- add/rewrite entity-body parser
+function Entity.setBodyParser( tbl )
     if ngx.get_phase() ~= 'init' then
         error( 'must be call on init phase' );
     else
@@ -112,8 +68,49 @@ local function setBodyParser( tbl )
 end
 
 
-return {
-    get = get,
-    getBody = getBody,
-    setBodyParser = setBodyParser,
-};
+-- get request table
+function Entity:init()
+    self.method = ngx.req.get_method();
+    self.scheme = ngx.var.scheme;
+    self.uri = ngx.var.uri;
+    self.request_uri = ngx.var.request_uri;
+    self.query = ngx.req.get_uri_args();
+    self.header = ngx.req.get_headers();
+    
+    return self;
+end
+
+
+-- get entity-body
+function Entity:getBody( ctype, ... )
+    if not ACCEPT_ENTITY_BODY[self.method] then
+		return nil;
+    elseif 1 ~= string.find( ngx.var.http_content_type, ctype, 1, true ) then
+		return nil, NOT_ACCEPTABLE;
+    elseif self.body then
+        return self.body;
+    else
+        local parser = PARSER[ctype];
+
+        -- unsupported content-type
+        if not parser then
+            return nil, UNSUPPORTED_MEDIA_TYPE;
+        elseif ngx.var.content_length then
+            local body, rc, err = parser( ... );
+
+            if body then
+                self.body = body;
+                return body;
+            -- invalid status-code
+            elseif not constants.toString( rc ) then
+                return nil, INTERNAL_SERVER_ERROR, 'parser returned invalid status code.';
+            end
+
+            return nil, rc, err;
+        end
+    end
+    
+    return nil, NO_CONTENT;
+end
+
+return Entity.exports;
