@@ -29,7 +29,7 @@
 --]]
 
 local util = require('util');
-local NO_CONTENT = require('resty.entity.constants').NO_CONTENT;
+local NO_CONTENT = require('httpconsts.status').consts.NO_CONTENT;
 
 -- application/x-www-form-urlencoded
 local function parse()

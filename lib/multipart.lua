@@ -30,11 +30,11 @@
 
 local upload = require('resty.upload');
 local util = require('util');
-local constants = require('resty.entity.constants');
-local OK = constants.OK;
-local INTERNAL_SERVER_ERROR = constants.INTERNAL_SERVER_ERROR;
-local BAD_REQUEST = constants.BAD_REQUEST;
-local REQUEST_ENTITY_TOO_LARGE = constants.REQUEST_ENTITY_TOO_LARGE;
+local HTTP_STATUS = require('httpconsts.status').consts;
+local OK = HTTP_STATUS.OK;
+local INTERNAL_SERVER_ERROR = HTTP_STATUS.INTERNAL_SERVER_ERROR;
+local BAD_REQUEST = HTTP_STATUS.BAD_REQUEST;
+local REQUEST_ENTITY_TOO_LARGE = HTTP_STATUS.REQUEST_ENTITY_TOO_LARGE;
 local DEFAULT = {
     -- path of upload file directory
     TMPDIR = '/tmp',

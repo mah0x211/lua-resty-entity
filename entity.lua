@@ -28,10 +28,10 @@
 
 --]]
 
-local constants = require('resty.entity.constants');
-local UNSUPPORTED_MEDIA_TYPE = constants.UNSUPPORTED_MEDIA_TYPE;
-local INTERNAL_SERVER_ERROR = constants.INTERNAL_SERVER_ERROR;
-local NO_CONTENT = constants.NO_CONTENT;
+local HTTP_STATUS = require('httpconsts.status').consts;
+local UNSUPPORTED_MEDIA_TYPE = HTTP_STATUS.UNSUPPORTED_MEDIA_TYPE;
+local INTERNAL_SERVER_ERROR = HTTP_STATUS.INTERNAL_SERVER_ERROR;
+local NO_CONTENT = HTTP_STATUS.NO_CONTENT;
 local PARSER = {
     ['application/x-www-form-urlencoded'] = require('resty.entity.form'),
     ['multipart/form-data'] = require('resty.entity.multipart'),
@@ -102,7 +102,7 @@ function Entity:getBody( ctype, ... )
                 self.body = body;
                 return body;
             -- invalid status-code
-            elseif not constants.toString( rc ) then
+            elseif type(rc) ~= 'number' or not HTTP_STATUS[rc] then
                 return nil, INTERNAL_SERVER_ERROR, 'parser returned invalid status code.';
             end
 

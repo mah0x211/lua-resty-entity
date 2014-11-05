@@ -29,9 +29,9 @@
 --]]
 
 local decode = require('cjson.safe').decode;
-local constants = require('resty.entity.constants');
-local UNPROCESSABLE_ENTITY = constants.UNPROCESSABLE_ENTITY;
-local NO_CONTENT = constants.NO_CONTENT;
+local HTTP_STATUS = require('httpconsts.status').consts;
+local UNPROCESSABLE_ENTITY = HTTP_STATUS.UNPROCESSABLE_ENTITY;
+local NO_CONTENT = HTTP_STATUS.NO_CONTENT;
 
 -- application/json
 local function parse()
