@@ -28,6 +28,7 @@
 
 --]]
 
+local toStatusLineName = require('httpconsts.status').toStatusLineName;
 local HTTP_STATUS = require('httpconsts.status').consts;
 local UNSUPPORTED_MEDIA_TYPE = HTTP_STATUS.UNSUPPORTED_MEDIA_TYPE;
 local INTERNAL_SERVER_ERROR = HTTP_STATUS.INTERNAL_SERVER_ERROR;
@@ -102,7 +103,7 @@ function Entity:getBody( ctype, ... )
                 self.body = body;
                 return body;
             -- invalid status-code
-            elseif type(rc) ~= 'number' or not HTTP_STATUS[rc] then
+            elseif not toStatusLineName( rc ) then
                 return nil, INTERNAL_SERVER_ERROR, 'parser returned invalid status code.';
             end
 
