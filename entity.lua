@@ -27,9 +27,10 @@
   Created by Masatoshi Teruya on 14/06/30.
 
 --]]
-
+-- module
 local toStatusLineName = require('httpconsts.status').toStatusLineName;
 local HTTP_STATUS = require('httpconsts.status').consts;
+-- constants
 local UNSUPPORTED_MEDIA_TYPE = HTTP_STATUS.UNSUPPORTED_MEDIA_TYPE;
 local INTERNAL_SERVER_ERROR = HTTP_STATUS.INTERNAL_SERVER_ERROR;
 local NO_CONTENT = HTTP_STATUS.NO_CONTENT;
@@ -42,6 +43,8 @@ local ACCEPT_ENTITY_BODY = {
     POST = true,
     PUT = true
 };
+local EPARSER = 'incorrect parser implementation: %q';
+-- class
 local Entity = require('halo').class.Entity;
 
 
@@ -82,30 +85,30 @@ end
 
 
 -- get entity-body
-function Entity:getBody( ctype, ... )
+function Entity:getBody( ... )
     if not ACCEPT_ENTITY_BODY[self.method] then
-        return nil;
-    elseif 1 ~= string.find( ngx.var.http_content_type, ctype, 1, true ) then
         return nil, NOT_ACCEPTABLE;
+    -- already received
     elseif self.body then
         return self.body;
     else
-        local parser = PARSER[ctype];
-
+        local ctype = ngx.var.http_content_type:match('[^%s;]+');
+        local parser = ctype and PARSER[ctype];
+        
         -- unsupported content-type
         if not parser then
             return nil, UNSUPPORTED_MEDIA_TYPE;
         elseif ngx.var.content_length then
             local body, rc, err = parser( ... );
-
+            
             if body then
                 self.body = body;
                 return body;
             -- invalid status-code
             elseif not toStatusLineName( rc ) then
-                return nil, INTERNAL_SERVER_ERROR, 'parser returned invalid status code.';
+                return nil, INTERNAL_SERVER_ERROR, EPARSER:format( ctype );
             end
-
+            
             return nil, rc, err;
         end
     end
