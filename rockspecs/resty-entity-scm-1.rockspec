@@ -11,9 +11,9 @@ description = {
 }
 dependencies = {
     "lua >= 5.1",
-    "util >= 1.0",
-    "halo >= 1.0",
-    "httpconsts >= 1.0"
+    "halo >= 1.1.0",
+    "httpconsts >= 1.0.1",
+    "util >= 1.3.3"
 }
 build = {
     type = "builtin",
