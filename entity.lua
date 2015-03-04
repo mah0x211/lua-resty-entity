@@ -40,8 +40,7 @@ local PARSER = {
 };
 local ACCEPT_ENTITY_BODY = {
     POST = true,
-    PUT = true,
-    DELETE = true
+    PUT = true
 };
 local Entity = require('halo').class.Entity;
 
