@@ -39,8 +39,8 @@ local PARSER = {
     ['application/json'] = require('resty.entity.json')
 };
 local ACCEPT_ENTITY_BODY = {
-	POST = true,
-	PUT = true,
+    POST = true,
+    PUT = true,
     DELETE = true
 };
 local Entity = require('halo').class.Entity;
@@ -85,9 +85,9 @@ end
 -- get entity-body
 function Entity:getBody( ctype, ... )
     if not ACCEPT_ENTITY_BODY[self.method] then
-		return nil;
+        return nil;
     elseif 1 ~= string.find( ngx.var.http_content_type, ctype, 1, true ) then
-		return nil, NOT_ACCEPTABLE;
+        return nil, NOT_ACCEPTABLE;
     elseif self.body then
         return self.body;
     else

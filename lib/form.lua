@@ -36,10 +36,10 @@ local function parse()
     local form = {};
     
     ngx.req.read_body();
-	if not ngx.req.get_body_data() then
+    if not ngx.req.get_body_data() then
         return nil, NO_CONTENT;
     end
-	
+    
     for k,v in pairs( ngx.req.get_post_args() ) do
         util.table.set( form, k, v );
     end
