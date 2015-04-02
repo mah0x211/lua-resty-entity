@@ -101,7 +101,7 @@ function Entity:getBody( ... )
     -- already received
     elseif self.body then
         return self.body;
-    else
+    elseif ngx.var.http_content_type then
         local ctype = ngx.var.http_content_type:match('[^%s;]+');
         local parser = ctype and PARSER[ctype];
         
