@@ -72,13 +72,23 @@ end
 
 
 -- get request table
-function Entity:init()
+function Entity:init( ... )
     self.method = ngx.req.get_method();
     self.scheme = ngx.var.scheme;
     self.uri = ngx.var.uri;
     self.request_uri = ngx.var.request_uri;
     self.query = ngx.req.get_uri_args();
     self.header = ngx.req.get_headers();
+    
+    -- add accept entity body methods
+    for idx, method in ipairs({...}) do
+        if type( method ) ~= 'string' then
+            error(
+                ('method#%d must be string: %s'):format( idx, type( method ) )
+            )
+        end
+        ACCEPT_ENTITY_BODY[method:upper()] = true;
+    end
     
     return self;
 end
