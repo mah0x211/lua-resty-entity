@@ -31,6 +31,7 @@
 local toStatusLineName = require('httpconsts.status').toStatusLineName;
 local HTTP_STATUS = require('httpconsts.status').consts;
 -- constants
+local NOT_ACCEPTABLE = HTTP_STATUS.NOT_ACCEPTABLE;
 local UNSUPPORTED_MEDIA_TYPE = HTTP_STATUS.UNSUPPORTED_MEDIA_TYPE;
 local INTERNAL_SERVER_ERROR = HTTP_STATUS.INTERNAL_SERVER_ERROR;
 local NO_CONTENT = HTTP_STATUS.NO_CONTENT;
