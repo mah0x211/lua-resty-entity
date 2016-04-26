@@ -6,7 +6,6 @@ request entity handling module for openresty.
 ## Dependencies
 
 - [cjson](https://github.com/mpx/lua-cjson): Lua CJSON is a fast JSON encoding/parsing module for Lua
-- [halo](https://github.com/mah0x211/lua-halo): Simple OOP Library For Lua
 - [httpconsts](https://github.com/mah0x211/lua-httpconsts): HTTP method names and status code constants module
 - [resty-upload](https://github.com/openresty/lua-resty-upload): Streaming reader and parser for http file uploading based on ngx_lua cosocket
 - [util](https://github.com/mah0x211/lua-util): useful utility functions module
