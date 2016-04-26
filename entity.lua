@@ -45,54 +45,9 @@ local ACCEPT_ENTITY_BODY = {
     PUT = true
 };
 local EPARSER = 'incorrect parser implementation: %q';
+
 -- class
-local Entity = require('halo').class.Entity;
-
-
--- add/rewrite entity-body parser
-function Entity.setBodyParser( tbl )
-    if ngx.get_phase() ~= 'init' then
-        error( 'must be call on init phase' );
-    else
-        for ctype, fn in pairs( tbl ) do
-            if type( ctype ) ~= 'string' then
-                error( 'content-type must be type of string' );
-            -- remove parser
-            elseif fn == false then
-                PARSER[ctype] = nil;
-            -- check parser
-            elseif type( fn ) ~= 'function' then
-                error( 'parser must be type of function' );
-            -- register parser
-            else
-                PARSER[ctype] = fn;
-            end
-        end
-    end
-end
-
-
--- get request table
-function Entity:init( ... )
-    self.method = ngx.req.get_method();
-    self.scheme = ngx.var.scheme;
-    self.uri = ngx.var.uri;
-    self.request_uri = ngx.var.request_uri;
-    self.query = ngx.req.get_uri_args();
-    self.header = ngx.req.get_headers();
-
-    -- add accept entity body methods
-    for idx, method in ipairs({...}) do
-        if type( method ) ~= 'string' then
-            error(
-                ('method#%d must be string: %s'):format( idx, type( method ) )
-            )
-        end
-        ACCEPT_ENTITY_BODY[method:upper()] = true;
-    end
-
-    return self;
-end
+local Entity = {};
 
 
 -- get entity-body
@@ -127,4 +82,58 @@ function Entity:getBody( ... )
     return nil, NO_CONTENT;
 end
 
-return Entity.exports;
+
+-- add/rewrite entity-body parser
+local function setBodyParser( tbl )
+    if ngx.get_phase() ~= 'init' then
+        error( 'must be call on init phase' );
+    else
+        for ctype, fn in pairs( tbl ) do
+            if type( ctype ) ~= 'string' then
+                error( 'content-type must be type of string' );
+            -- remove parser
+            elseif fn == false then
+                PARSER[ctype] = nil;
+            -- check parser
+            elseif type( fn ) ~= 'function' then
+                error( 'parser must be type of function' );
+            -- register parser
+            else
+                PARSER[ctype] = fn;
+            end
+        end
+    end
+end
+
+
+-- get request table
+local function new( ... )
+    local tbl = setmetatable({
+        method = ngx.req.get_method(),
+        scheme = ngx.var.scheme,
+        uri = ngx.var.uri,
+        request_uri = ngx.var.request_uri,
+        query = ngx.req.get_uri_args(),
+        header = ngx.req.get_headers()
+    }, {
+        __index = Entity
+    });
+
+    -- add accept entity body methods
+    for idx, method in ipairs({...}) do
+        if type( method ) ~= 'string' then
+            error(
+                ('method#%d must be string: %s'):format( idx, type( method ) )
+            )
+        end
+        ACCEPT_ENTITY_BODY[method:upper()] = true;
+    end
+
+    return tbl;
+end
+
+
+return {
+    new = new,
+    setBodyParser = setBodyParser
+};
