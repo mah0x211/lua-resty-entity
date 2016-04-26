@@ -18,6 +18,70 @@ request entity handling module for openresty.
 $ luarocks install resty-entity --from=http://mah0x211.github.io/rocks/
 ```
 
+## Usage
+
+```
+daemon off;
+worker_processes    1;
+
+events {
+    worker_connections  1024;
+    accept_mutex_delay  100ms;
+}
+
+
+http {
+    sendfile            on;
+    tcp_nopush          on;
+    #keepalive_timeout  0;
+    keepalive_requests  500000;
+    #gzip               on;
+    open_file_cache     max=100;
+    include             mime.types;
+    default_type        text/html;
+    index               index.html;
+    resolver            8.8.8.8;
+    resolver_timeout    5;
+
+    #
+    # log settings
+    #
+    access_log  off;
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+
+    #
+    # lua global settings
+    #
+    lua_check_client_abort  on;
+    lua_code_cache          on;
+
+    server {
+        listen      1080;
+        root        html;
+
+        #
+        # content handler: html
+        #
+        location ~* \.(html|htm)$ {
+            content_by_lua "
+                local inspect = require('util').inspect;
+                local Entity = require('resty.entity');
+                local req = Entity.new();
+                local res, status, err, _;
+
+                if req.method == 'POST' then
+                    _, status, err = req:getBody();
+                end
+
+                ngx.say( inspect({ req, status, err }) );
+            ";
+        }
+    }
+}
+```
 
 ## Create an Request Entity
 
